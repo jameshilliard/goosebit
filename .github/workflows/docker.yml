@@ -1,10 +1,15 @@
 name: Docker
 
+# on:
+#   workflow_run:
+#     workflows: ["PyPI"]
+#     types:
+#       - completed
+
 on:
-  workflow_run:
-    workflows: ["PyPI"]
-    types:
-      - completed
+  push:
+    branches:
+      - "gardena/eb/docker_test"
 
 jobs:
   docker:
@@ -23,9 +28,9 @@ jobs:
           if [ $GITHUB_REF_TYPE = tag ]; then
             tag=$GITHUB_REF_NAME
           else
-            echo "This job is only supposed to be run for Git tags"
-            exit 1
+            tag=v0.1.2  # TODO: fail instead
           fi
+
           echo "GOOSEBIT_VERSION=${tag#v}" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
@@ -46,7 +51,7 @@ jobs:
         with:
           context: docker
           build-args: GOOSEBIT_VERSION=${{ env.GOOSEBIT_VERSION }}
-          push: true
+          push: false  # TODO: set to `true`
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -55,4 +60,4 @@ jobs:
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+          push-to-registry: false  # TODO: set to `true`
