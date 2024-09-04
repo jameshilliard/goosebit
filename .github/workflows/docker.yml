@@ -22,15 +22,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set GOOSEBIT_VERSION env var
         run: |
-          if [ $GITHUB_REF_TYPE = tag ]; then
-            tag=$GITHUB_REF_NAME
-          else
-            tag=v0.1.2  # TODO: fail instead
-          fi
-
+          tag=$(git describe --tags --abbrev=0)
           echo "GOOSEBIT_VERSION=${tag#v}" >> $GITHUB_ENV
 
       - name: Log in to Docker Hub
